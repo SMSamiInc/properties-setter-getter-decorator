@@ -24,9 +24,9 @@ class Position implements IModelFunctions {
 	setModelValues: (any: any) => any;
 	getModelValues: () => any;
 
-	@ModelProperty('x')
+	@ModelProperty()
 	X = 1;
-	@ModelProperty('y')
+	@ModelProperty()
 	Y = 2;
 
 	z = 0;
@@ -56,21 +56,21 @@ class User implements IModelFunctions {
 	setModelValues: (any: any) => any;
 	getModelValues: () => any;
 
-	@ModelProperty('Name')
-	name = 'name';
-	@ModelProperty()
-	password = 'password';
-	@ModelProperty()
-	pos: Position = new Position();
 
+	@ModelProperty()
+	test = {
+		a: 2,
+		b: 'some string',
+	};
 
 
 }
 
 const t = new User();
 t.setModelValues({
-	Name: 'mkashif',
-	password: 'welcome',
+	test: {
+		b: 'a new string',
+	},
 });
 
 console.log(t.getModelValues());

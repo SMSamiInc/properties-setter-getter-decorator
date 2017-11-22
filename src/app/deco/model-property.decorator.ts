@@ -3,30 +3,33 @@ function push(target, key, mapTo) {
 }
 
 function checkKeys(mapTo, key, obj) {
-	return mapTo in obj ? obj[mapTo] : obj[key];
+	return obj && (mapTo in obj ? obj[mapTo] : obj[key]);
 }
 
 function isDecoratorObject(obj) {
-	return typeof obj === 'object' && 'setModelValues' in obj;
+	return obj && typeof obj === 'object' && 'setModelValues' in obj;
 }
 
 function isRawObject(obj) {
-	return typeof obj === 'object' && !('setModelValues' in obj);
+	return obj && typeof obj === 'object' && !('setModelValues' in obj);
 }
 
-function copyRawObjectValue(source, dist) {
-	if (isRawObject(dist)) {
-		Object.keys(source).forEach((key, i) => {
-			if (key in dist) {
-				if (copyRawObjectValue(source[key], dist[key])) {
+function copyRawObjectValue(src) {
+	const obj = {};
+	if (src) {
+		const recurseObject = (source, dist) => {
+			Object.keys(source).forEach((key) => {
+				if (isRawObject(source[key])) {
+					recurseObject(source[key], dist[key]);
 				} else {
 					dist[key] = source[key];
 				}
-			}
-		});
-	} else {
-		dist = source;
+			});
+		};
+		recurseObject(src, obj);
+		return obj;
 	}
+	return null;
 }
 
 function copyDecoratorObjectValues(source, dist) {
@@ -44,15 +47,16 @@ function defineSetModelValues(target) {
 			const self = this;
 			this['_list_'].forEach((item) => {
 				if (copyDecoratorObjectValues(checkKeys(item.mapTo, item.key, json), self[item.key])) {
+				} else if (isRawObject(self[item.key])) {
+					self[item.key] = { ...self[item.key], ...copyRawObjectValue(checkKeys(item.mapTo, item.key, json)) };
 				} else {
-					// copyRawObjectValue(checkKeys(item.mapTo, item.key, json), checkKeys(item.mapTo, item.key, self));
+					self[item.key] = checkKeys(item.mapTo, item.key, json);
 				}
 			});
 			return this;
 		}
 	});
 }
-
 
 
 function defineGetModelValues(target) {
@@ -62,9 +66,14 @@ function defineGetModelValues(target) {
 			const json = {};
 			this['_list_'].map((item) => {
 				if (item.mapTo) {
-					json[item.mapTo] = self[item.key];
 				} else if (item.key) {
-					json[item.key] = self[item.key];
+					if (isDecoratorObject(self[item.key])) {
+						json[item.key] = self[item.key].getModelValues();
+					} else if (isRawObject(self[item.key])) {
+						json[item.key] = copyRawObjectValue(self[item.key]);
+					} else {
+						json[item.key] = self[item.key];
+					}
 				}
 			});
 			return json;
