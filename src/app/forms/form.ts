@@ -1,6 +1,5 @@
-import { FormControl, FormGroup, FormBuilder, Validator } from '@angular/forms';
+import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Injectable } from '@angular/core';
-import { Validators } from '@angular/forms/src/validators';
 import { FormProperty, IFormFunctions } from '../deco/form-property.decorator';
 
 
@@ -12,7 +11,7 @@ export class FormService extends FormGroup implements IFormFunctions {
 	getFormValues: () => any;
 
 	@FormProperty('n')
-	name: FormControl = new FormControl('mkashif');
+	name: FormControl = new FormControl('', [Validators.required, Validators.minLength(5)]);
 
 	@FormProperty('fg')
 	formGroup = new FormGroup({
@@ -30,6 +29,7 @@ export class FormService extends FormGroup implements IFormFunctions {
 	}
 
 	onSubmit = () => {
+		console.log(this.status);
 		this.setFormValues({
 			id: 2,
 			n: 'My name is khan',
@@ -37,7 +37,6 @@ export class FormService extends FormGroup implements IFormFunctions {
 				email: 'salam',
 			}
 		});
-		console.log(this.getFormValues());
 	}
 
 }
