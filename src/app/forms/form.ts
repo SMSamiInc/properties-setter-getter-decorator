@@ -11,8 +11,17 @@ export class FormService extends FormGroup implements IFormFunctions {
 	setFormValues: (any: any) => any;
 	getFormValues: () => any;
 
-	@FormProperty()
+	@FormProperty('n')
 	name: FormControl = new FormControl('mkashif');
+
+	@FormProperty('fg')
+	formGroup = new FormGroup({
+		email: new FormControl('test@mail.com'),
+		password: new FormControl('welcome'),
+	});
+
+	@FormProperty()
+	id = 0;
 
 	constructor() {
 		super({});
@@ -21,6 +30,13 @@ export class FormService extends FormGroup implements IFormFunctions {
 	}
 
 	onSubmit = () => {
+		this.setFormValues({
+			id: 2,
+			n: 'My name is khan',
+			fg: {
+				email: 'salam',
+			}
+		});
 		console.log(this.getFormValues());
 	}
 

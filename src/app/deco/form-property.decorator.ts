@@ -73,7 +73,10 @@ function defineSetFormValues(target) {
 			const self = this;
 			this['_list_'].forEach((item) => {
 				if (isFormObject(self[item.key])) {
-					self[item.key].patchValue(checkKeys(item.mapTo, item.key, json));
+					const value = checkKeys(item.mapTo, item.key, json);
+					if (isObjectDefined(value)) {
+						self[item.key].patchValue(value);
+					}
 				} else if (isDecoratorObject(self[item.key])) {
 					self[item.key].setFormValues(checkKeys(item.mapTo, item.key, json));
 				} else if (isRawObject(self[item.key])) {
@@ -97,7 +100,7 @@ function defineGetFormValues(target) {
 			this['_list_'].map((item) => {
 				if (item.mapTo) {
 					if (isFormObject(self[item.key])) {
-						json[item.key] = this.get(item.key).value;
+						json[item.mapTo] = this.get(item.key).value;
 					} else if (isDecoratorObject(self[item.key])) {
 						json[item.mapTo] = self[item.key].getFormValues();
 					} else if (isRawObject(self[item.key])) {
@@ -106,7 +109,9 @@ function defineGetFormValues(target) {
 						json[item.mapTo] = self[item.key];
 					}
 				} else if (item.key) {
-					if (isDecoratorObject(self[item.key])) {
+					if (isFormObject(self[item.key])) {
+						json[item.key] = this.get(item.key).value;
+					} else if (isDecoratorObject(self[item.key])) {
 						json[item.key] = self[item.key].getFormValues();
 					} else if (isRawObject(self[item.key])) {
 						json[item.key] = copyRawObjectValue(self[item.key]);
