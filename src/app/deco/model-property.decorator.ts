@@ -3,7 +3,13 @@ function push(target, key, mapTo) {
 }
 
 function checkKeys(mapTo, key, obj) {
-	return obj && (mapTo in obj ? obj[mapTo] : obj[key]);
+	if (obj && mapTo in obj) {
+		return obj[mapTo];
+	} else if (obj) {
+		return obj[key];
+	} else {
+		return null;
+	}
 }
 
 function isDecoratorObject(obj) {
@@ -50,7 +56,7 @@ function defineSetModelValues(target) {
 				} else if (isRawObject(self[item.key])) {
 					self[item.key] = { ...self[item.key], ...copyRawObjectValue(checkKeys(item.mapTo, item.key, json)) };
 				} else {
-					self[item.key] = checkKeys(item.mapTo, item.key, json);
+					self[item.key] = checkKeys(item.mapTo, item.key, json) ? checkKeys(item.mapTo, item.key, json) : self[item.key];
 				}
 			});
 			return this;
@@ -66,6 +72,13 @@ function defineGetModelValues(target) {
 			const json = {};
 			this['_list_'].map((item) => {
 				if (item.mapTo) {
+					if (isDecoratorObject(self[item.key])) {
+						json[item.mapTo] = self[item.key].getModelValues();
+					} else if (isRawObject(self[item.key])) {
+						json[item.mapTo] = copyRawObjectValue(self[item.key]);
+					} else {
+						json[item.mapTo] = self[item.key];
+					}
 				} else if (item.key) {
 					if (isDecoratorObject(self[item.key])) {
 						json[item.key] = self[item.key].getModelValues();
