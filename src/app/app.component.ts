@@ -59,6 +59,9 @@ class User implements IModelFunctions {
 	@ModelProperty('Name')
 	name = 'mkashif';
 
+	@ModelProperty('isok')
+	isOk = true;
+
 	@ModelProperty()
 	test = {
 		a: 2,
@@ -75,8 +78,9 @@ const t = new User();
 t.setModelValues({
 	name: 'salam',
 	pos: {
-		x: 222,
+		x: 0,
 	},
+	isok: false,
 });
 
 console.log(t.getModelValues());

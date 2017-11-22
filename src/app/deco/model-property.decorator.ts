@@ -1,11 +1,17 @@
+
 function push(target, key, mapTo) {
 	target['_list_'].push({ key, mapTo });
 }
 
+function isObjectDefined(obj) {
+	return (obj !== undefined && obj !== null);
+}
+
+
 function checkKeys(mapTo, key, obj) {
-	if (obj && mapTo in obj) {
+	if (isObjectDefined(obj) && mapTo in obj) {
 		return obj[mapTo];
-	} else if (obj) {
+	} else if (isObjectDefined(obj)) {
 		return obj[key];
 	} else {
 		return null;
@@ -13,11 +19,11 @@ function checkKeys(mapTo, key, obj) {
 }
 
 function isDecoratorObject(obj) {
-	return obj && typeof obj === 'object' && 'setModelValues' in obj;
+	return isObjectDefined(obj) && typeof obj === 'object' && 'setModelValues' in obj;
 }
 
 function isRawObject(obj) {
-	return obj && typeof obj === 'object' && !('setModelValues' in obj);
+	return isObjectDefined(obj) && typeof obj === 'object' && !('setModelValues' in obj);
 }
 
 function copyRawObjectValue(src) {
@@ -56,7 +62,8 @@ function defineSetModelValues(target) {
 				} else if (isRawObject(self[item.key])) {
 					self[item.key] = { ...self[item.key], ...copyRawObjectValue(checkKeys(item.mapTo, item.key, json)) };
 				} else {
-					self[item.key] = checkKeys(item.mapTo, item.key, json) ? checkKeys(item.mapTo, item.key, json) : self[item.key];
+					const value = checkKeys(item.mapTo, item.key, json);
+					self[item.key] = isObjectDefined(value) ? value : self[item.key];
 				}
 			});
 			return this;
