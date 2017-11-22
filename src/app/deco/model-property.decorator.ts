@@ -1,4 +1,3 @@
-
 function push(target, key, mapTo) {
 	target['_list_'].push({ key, mapTo });
 }
@@ -6,7 +5,6 @@ function push(target, key, mapTo) {
 function isObjectDefined(obj) {
 	return (obj !== undefined && obj !== null);
 }
-
 
 function checkKeys(mapTo, key, obj) {
 	if (isObjectDefined(obj) && mapTo in obj) {
@@ -44,21 +42,13 @@ function copyRawObjectValue(src) {
 	return null;
 }
 
-function copyDecoratorObjectValues(source, dist) {
-	if (isDecoratorObject(dist)) {
-		dist.setModelValues(source);
-		return true;
-	}
-	return false;
-}
-
-
 function defineSetModelValues(target) {
 	Reflect.defineProperty(target, 'setModelValues', {
 		value: function (json) {
 			const self = this;
 			this['_list_'].forEach((item) => {
-				if (copyDecoratorObjectValues(checkKeys(item.mapTo, item.key, json), self[item.key])) {
+				if (isDecoratorObject(self[item.key])) {
+					self[item.key].setModelValues(checkKeys(item.mapTo, item.key, json));
 				} else if (isRawObject(self[item.key])) {
 					self[item.key] = { ...self[item.key], ...copyRawObjectValue(checkKeys(item.mapTo, item.key, json)) };
 				} else {

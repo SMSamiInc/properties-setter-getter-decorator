@@ -1,5 +1,5 @@
 <form [formGroup]="form" (ngSubmit)="form.onSubmit()">
-	<input formControlName="username">
+	<input formControlName="name">
 	<button type="submit" >Done</button>
 	{{form.value | json}}
 </form>
