@@ -1,0 +1,19 @@
+{
+  "name": "ng-properties-setter-getter",
+  "version": "0.0.1",
+  "description": "Helper decorators and interfaces for angular form-group and models to get and set data automatically ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "angular",
+    "form group",
+    "binding",
+    "property",
+    "model",
+    "service"
+  ],
+  "author": "Smsami.inc",
+  "license": "ISC"
+}

@@ -1,6 +1,6 @@
 import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Injectable } from '@angular/core';
-import { FormProperty, IFormFunctions } from '../deco/form-property.decorator';
+import { FormProperty, IFormFunctions } from 'ng-properties-setter-getter';
 
 
 @Injectable()
