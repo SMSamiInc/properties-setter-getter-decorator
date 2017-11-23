@@ -66,6 +66,31 @@ function defineInitForm(target) {
 
 }
 
+function defineSetFormErrors(target) {
+	Reflect.defineProperty(target, 'setFormErrors', {
+		value: function (json) {
+			const self = this;
+			this['_list_'].forEach((item) => {
+				if (isFormObject(self[item.key])) {
+					self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
+				}
+			});
+		}
+	});
+}
+
+function defineClearFormErrors(target) {
+	Reflect.defineProperty(target, 'clearFormErrors', {
+		value: function () {
+			const self = this;
+			this['_list_'].forEach((item) => {
+				if (isFormObject(self[item.key])) {
+					self[item.key].setErrors(null);
+				}
+			});
+		}
+	});
+}
 
 function defineSetFormValues(target) {
 	Reflect.defineProperty(target, 'setFormValues', {
@@ -136,6 +161,8 @@ function FormProperty(mapTo = null) {
 			push(target, key, mapTo);
 		}
 		defineInitForm(target);
+		defineSetFormErrors(target);
+		defineClearFormErrors(target);
 		defineSetFormValues(target);
 		defineGetFormValues(target);
 	};
@@ -146,6 +173,8 @@ export interface IFormFunctions {
 	initForm: () => any;
 	setFormValues: (any) => any;
 	getFormValues: () => any;
+	setFormErrors: (any) => any;
+	clearFormErrors: () => any;
 }
 
 export {
