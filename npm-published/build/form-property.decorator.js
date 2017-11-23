@@ -71,6 +71,32 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 					}
 			});
 	}
+	function defineSetFormErrors(target) {
+			Reflect.defineProperty(target, 'setFormErrors', {
+					value: function (json) {
+							var self = this;
+							this['_list_'].forEach(function (item) {
+									if (isFormObject(self[item.key])) {
+											self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
+									}
+							});
+							return this;
+					}
+			});
+	}
+	function defineClearFormErrors(target) {
+			Reflect.defineProperty(target, 'clearFormErrors', {
+					value: function () {
+							var self = this;
+							this['_list_'].forEach(function (item) {
+									if (isFormObject(self[item.key])) {
+											self[item.key].setErrors(null);
+									}
+							});
+							return this;
+					}
+			});
+	}
 	function defineSetFormValues(target) {
 			Reflect.defineProperty(target, 'setFormValues', {
 					value: function (json) {
@@ -149,6 +175,8 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 							push(target, key, mapTo);
 					}
 					defineInitForm(target);
+					defineSetFormErrors(target);
+					defineClearFormErrors(target);
 					defineSetFormValues(target);
 					defineGetFormValues(target);
 			};

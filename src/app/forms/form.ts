@@ -30,12 +30,12 @@ export class FormService extends FormGroup implements IFormFunctions {
 		this.initForm();
 
 		this.setFormErrors({
-			name: [{
+			n: [{
 				error: 'some error'
 			}],
 		});
 
-		this.clearFormErrors();
+		// this.clearFormErrors();
 
 		console.log(this.name.status);
 		console.log(this.name.errors);

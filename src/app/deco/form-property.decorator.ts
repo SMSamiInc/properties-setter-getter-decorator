@@ -75,6 +75,8 @@ function defineSetFormErrors(target) {
 					self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
 				}
 			});
+
+			return this;
 		}
 	});
 }
@@ -88,6 +90,7 @@ function defineClearFormErrors(target) {
 					self[item.key].setErrors(null);
 				}
 			});
+			return this;
 		}
 	});
 }

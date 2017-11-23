@@ -58,6 +58,8 @@ export class FormService extends FormGroup implements IFormFunctions {
 	initForm: () => any;
 	setFormValues: (any: any) => any;
 	getFormValues: () => any;
+	setFormErrors: (any) => any;
+	clearFormErrors: () => any;
 
 	@FormProperty('n')
 	name: FormControl = new FormControl('', [Validators.required, Validators.minLength(5)]);
