@@ -8,6 +8,11 @@ In large Angular applications we deal with lot of Model classes and Angular Form
 ```
 So we almost repeat same kind of work for every model and form. "ng-properties-setter-getter" solve this problem.
 
+### Installation
+```sh
+$ npm install ng-properties-setter-getter
+```
+
 # How it works
 lets look to a Model First.
 ```
@@ -31,7 +36,7 @@ lets look to a Model First.
 	}
 }
 ```
-Now we can use getJson() and set({}) functions for our UserModel class it autmatically maps data for you. You dont need to write code for it.
+Now we can use getModelValues() and setModelValues({}) functions for our UserModel class it autmatically maps data for you. You dont need to write code for it.
 ```
     let user = new User();
     user.setModelValues({ user_name: 'john', email: 'john@example.com' });
