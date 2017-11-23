@@ -1,4 +1,4 @@
-# AngularTestApp
+# properties-setter-getter-decorator
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.5.0.
 
@@ -6,22 +6,130 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Code scaffolding
+# ng-properties-setter-getter
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Helping decorators and interfaces which automates the integrations between Model and Form classes. 
 
-## Build
+# Why do I need it!
+In large Angular applications we deal with lot of Model classes and Angular Forms. Every Model contains certain amout properties for which we need Forms to Add and Edit our data. So we always repeat some work like.
+```
+	model.setData(somejson), model.getData()
+	form.setData(somejson), form.getData()
+```
+So we almost repeat same kind of work for every model and form. "ng-properties-setter-getter" solve this problem.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+### Installation
+```sh
+$ npm install ng-properties-setter-getter
+```
 
-## Running unit tests
+# How it works
+lets look to a Model First.
+```
+ import { ModelProperty, IModelFunctions } from 'ng-properties-setter-getter';
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+ class User implements IModelFunctions {
 
-## Running end-to-end tests
+	setModelValues: (any: any) => any;
+	getModelValues: () => any;
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+	@ModelProperty('user_name')
+	username: string;
 
-## Further help
+	@ModelProperty()
+	email: string;
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+	anyotherProperty: any;
+
+	constructor() {
+
+	}
+}
+```
+Now we can use getModelValues() and setModelValues({}) functions for our UserModel class it autmatically maps data for you. You dont need to write code for it.
+```
+    let user = new User();
+    user.setModelValues({ user_name: 'john', email: 'john@example.com' });
+    http.post('someu url', user.getModelValues()) 
+    
+   // result:  {user_name:'john', Email:'john@example.com'}
+```
+It automatically set those properties which are binded in the above UserModel class and it also return the json object with value.! Now lets come to the @ModelProperty('user_name') part. As we see we use property 'username' in our class but gave 'user_name' in decorator it gives you the flexiblity of maping variables names. 
+Some times naming varibles are deffrent in Backend from Frontend like some data we recieve from http response we get a property name 'user_name' but we use property name 'userName'. So @ModelProperty(mapvariableto) provides mapping variable.
+
+Now lets look to the Form Service Class
+```
+    import { FormProperty, IFormFunctions } from 'ng-properties-setter-getter';
+
+
+@Injectable()
+export class FormService extends FormGroup implements IFormFunctions {
+
+	initForm: () => any;
+	setFormValues: (any: any) => any;
+	getFormValues: () => any;
+
+	@FormProperty('n')
+	name: FormControl = new FormControl('', [Validators.required, Validators.minLength(5)]);
+
+	@FormProperty('fg')
+	formGroup = new FormGroup({
+		email: new FormControl('test@mail.com'),
+		password: new FormControl('welcome'),
+	});
+
+	@FormProperty()
+	id = 0;
+
+	constructor() {
+		super({});
+		this.initForm();
+
+	}
+
+	onSubmit = () => {
+		console.log(this.status);
+		this.setFormValues({
+			id: 2,
+			n: 'lorem ipsum',
+			fg: {
+				email: 'test@example.com',
+			}
+		});
+	}
+
+}
+```
+Bind property of a form class works same as for ModelClass just little modification. You need extend form class from Angular "FormGroup" second it has an extra function called "initForm".
+Which allow you to use our own custom class as a FormGroup. Yes! you can use the instance of the form class directly as html form group like.
+
+``` 
+	// app.component.ts
+	export class AppComponent {
+		constructor(
+			private form: UserFormService,
+		) {}
+```
+```
+	// app.component.html
+	<form [formGroup]="form" (ngSubmit)="form.onSubmit()">
+		<input formControlName="username">
+		<input formControlName="email">
+		<button type="submit" >Done</button>
+		{{form.value | json}}
+	</form>
+```
+As UserFormService is extended from FormGroup so you can use every function of FormGroup as you need.
+
+### Installation
+```sh
+$ npm install ng-properties-setter-getter
+```
+
+You are good to Go!
+
+License
+----
+
+MIT
+
