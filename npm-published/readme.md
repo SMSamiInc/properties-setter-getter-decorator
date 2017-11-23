@@ -11,7 +11,7 @@ So we almost repeat same kind of work for every model and form. "ng-properties-s
 # How it works
 lets look to a Model First.
 ```
- import { ModelProperty, IModelFunctions } from 'ng-property-setter-getter';
+ import { ModelProperty, IModelFunctions } from 'ng-properties-setter-getter';
 
  class User implements IModelFunctions {
 
@@ -44,7 +44,7 @@ Some times naming varibles are deffrent in Backend from Frontend like some data 
 
 Now lets look to the Form Service Class
 ```
-    import { FormProperty, IFormFunctions } from '../deco/form-property.decorator';
+    import { FormProperty, IFormFunctions } from 'ng-properties-setter-getter';
 
 
 @Injectable()
