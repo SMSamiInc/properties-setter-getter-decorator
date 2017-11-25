@@ -53,7 +53,7 @@ function copyRawObjectValue(src) {
 }
 
 
-function forEachControl(startNode, callbackFormControl, callbackFormGroup = null) {
+export function forEachControl(startNode, callbackFormControl, callbackFormGroup = null) {
 	function rec(formGroup) {
 		Object.keys(formGroup.controls)
 			.forEach((key) => {

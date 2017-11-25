@@ -1,6 +1,6 @@
 {
   "name": "ng-properties-setter-getter",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Helper decorators and interfaces for angular form-group and models to get and set data automatically ",
   "main": "index.js",
   "scripts": {

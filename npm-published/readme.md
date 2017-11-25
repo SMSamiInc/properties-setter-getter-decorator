@@ -18,22 +18,33 @@ lets look to a Model First.
 ```
  import { ModelProperty, IModelFunctions } from 'ng-properties-setter-getter';
 
- class User implements IModelFunctions {
-
+@Injectable()
+export class User implements IModelFunctions {
 	setModelValues: (any: any) => any;
 	getModelValues: () => any;
 
 	@ModelProperty('user_name')
-	username: string;
-
+	name: string;
+	@ModelProperty()
+	password: string;
 	@ModelProperty()
 	email: string;
 
-	anyotherProperty: any;
+	@ModelProperty()
+	street: string;
+	@ModelProperty()
+	city: string;
+	@ModelProperty('country_code')
+	country: string;
 
 	constructor() {
-
+		this.setModelValues({
+			user_name: 'mkashif',
+			country_code: 'pakistan',
+			city: 'nowshera',
+		});
 	}
+
 }
 ```
 Now we can use getModelValues() and setModelValues({}) functions for our UserModel class it autmatically maps data for you. You dont need to write code for it.
@@ -52,45 +63,58 @@ Now lets look to the Form Service Class
     import { FormProperty, IFormFunctions } from 'ng-properties-setter-getter';
 
 
+
 @Injectable()
 export class FormService extends FormGroup implements IFormFunctions {
 
-	initForm: () => any;
+	initForm: (validatorService: any) => any;
 	setFormValues: (any: any) => any;
 	getFormValues: () => any;
 	setFormErrors: (any) => any;
 	clearFormErrors: () => any;
+	setFormAsyncValidators: (validatorService: any) => any;
 
-	@FormProperty('n')
-	name: FormControl = new FormControl('', [Validators.required, Validators.minLength(5)]);
-
-	@FormProperty('fg')
-	formGroup = new FormGroup({
-		email: new FormControl('test@mail.com'),
-		password: new FormControl('welcome'),
-	});
+	@FormProperty('user_name')
+	name: FormControl = new FormControl('testName');
 
 	@FormProperty()
-	id = 0;
+	password: FormControl = new FormControl('welcome');
 
-	constructor() {
+	@FormProperty()
+	email: FormControl = new FormControl('test@mail.com');
+
+	@FormProperty()
+	address: FormGroup = new FormGroup({
+		street: new FormControl('street 1'),
+		city: new FormControl('city abc'),
+		country: new FormControl('country xyz'),
+	});
+
+
+
+	constructor(
+		private user: User,
+		private userService: UserService,
+	) {
 		super({});
-		this.initForm();
+		this.initForm(this.userFormValidator);
+	}
 
+	userFormValidator(key) {
+		return function (control: AbstractControl) {
+			return this.userService.httpRequest()
+				.catch((error) => {
+					return Observable.of({ serverError: error.model[key] }).map(resp => resp);
+				});
+		};
 	}
 
 	onSubmit = () => {
-		console.log(this.status);
-		this.setFormValues({
-			id: 2,
-			n: 'lorem ipsum',
-			fg: {
-				email: 'test@example.com',
-			}
-		});
+		this.userService.pushErrors();
 	}
 
 }
+
 ```
 Bind property of a form class works same as for ModelClass just little modification. You need extend form class from Angular "FormGroup" second it has an extra function called "initForm".
 Which allow you to use our own custom class as a FormGroup. Yes! you can use the instance of the form class directly as html form group like.
@@ -105,9 +129,32 @@ Which allow you to use our own custom class as a FormGroup. Yes! you can use the
 ```
 	// app.component.html
 	<form [formGroup]="form" (ngSubmit)="form.onSubmit()">
-		<input formControlName="username">
+		<input formControlName="name" (change)="change()">
+		<app-show-error [control]="form.name"></app-show-error>
+		<br>
 		<input formControlName="email">
-		<button type="submit" >Done</button>
+		<app-show-error [control]="form.email"></app-show-error>
+		<br>
+		<input formControlName="password">
+		<app-show-error [control]="form.password"></app-show-error>
+		<br>
+		<div formGroupName="address">
+			<input formControlName="street" (change)="change()">
+			<app-show-error [control]="form.get('address.street')"></app-show-error>
+			<br>
+
+			<input formControlName="city" (change)="change()">
+			<app-show-error [control]="form.get('address.city')"></app-show-error>
+			<br>
+
+			<input formControlName="country" (change)="change()">
+			<app-show-error [control]="form.get('address.country')"></app-show-error>
+			<br>
+
+
+
+		</div>
+		<button type=" submit ">Done</button>
 		{{form.value | json}}
 	</form>
 ```

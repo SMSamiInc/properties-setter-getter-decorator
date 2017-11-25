@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 	}
 	return t;
 };
-define(["require", "exports", "@angular/forms"], function (require, exports, forms_1) {
+define(["require", "exports", "@angular/forms", "rxjs/add/operator/catch", "rxjs/add/observable/of"], function (require, exports, forms_1) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	function push(target, key, mapTo) {
@@ -53,11 +53,31 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 			}
 			return null;
 	}
+	function forEachControl(startNode, callbackFormControl, callbackFormGroup) {
+			if (callbackFormGroup === void 0) { callbackFormGroup = null; }
+			function rec(formGroup) {
+					Object.keys(formGroup.controls)
+							.forEach(function (key) {
+							if (formGroup.controls[key] instanceof forms_1.FormControl) {
+									callbackFormControl(formGroup.controls[key], key, formGroup);
+							}
+							else if (formGroup.controls[key] instanceof forms_1.FormGroup) {
+									if (callbackFormGroup) {
+											callbackFormGroup(formGroup.controls[key], key, formGroup);
+									}
+									rec(formGroup.controls[key]);
+							}
+					});
+			}
+			rec(startNode);
+	}
+	exports.forEachControl = forEachControl;
 	function defineInitForm(target) {
 			// form initialization
 			Reflect.defineProperty(target, 'initForm', {
-					value: function () {
+					value: function (validatorService) {
 							var _this = this;
+							if (validatorService === void 0) { validatorService = null; }
 							var self = this;
 							this['_list_'].forEach(function (item) {
 									var control = self[item.key] ? self[item.key] : new forms_1.FormControl();
@@ -68,6 +88,37 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 											_this[item.key] = control;
 									}
 							});
+							if (validatorService) {
+									this.setFormAsyncValidators(validatorService);
+							}
+					}
+			});
+	}
+	function defineSetFormAsyncValidators(target) {
+			Reflect.defineProperty(target, 'setFormAsyncValidators', {
+					value: function (validatorService) {
+							var _this = this;
+							var self = this;
+							forEachControl(self, function (control, key) {
+									_this['_list_'].forEach(function (item) {
+											if (item.key === key && item.mapTo) {
+													control.setAsyncValidators(validatorService(item.mapTo).bind(self));
+											}
+											else if (item.key === key) {
+													control.setAsyncValidators(validatorService(item.key).bind(self));
+											}
+									});
+							});
+					}
+			});
+	}
+	function defineClearFormErrors(target) {
+			Reflect.defineProperty(target, 'clearFormErrors', {
+					value: function () {
+							var self = this;
+							forEachControl(self, function (control, key) {
+									control.setErrors(null);
+							});
 					}
 			});
 	}
@@ -76,21 +127,14 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 					value: function (json) {
 							var self = this;
 							this['_list_'].forEach(function (item) {
-									if (isFormObject(self[item.key])) {
+									if (self[item.key] instanceof forms_1.FormControl) {
 											self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
 									}
-							});
-							return this;
-					}
-			});
-	}
-	function defineClearFormErrors(target) {
-			Reflect.defineProperty(target, 'clearFormErrors', {
-					value: function () {
-							var self = this;
-							this['_list_'].forEach(function (item) {
-									if (isFormObject(self[item.key])) {
-											self[item.key].setErrors(null);
+									if (self[item.key] instanceof forms_1.FormGroup) {
+											Object.keys(self[item.key].controls)
+													.forEach(function (key) {
+													self[item.key].controls[key].setErrors(checkKeys(item.mapTo, item.key, json[item.key]));
+											});
 									}
 							});
 							return this;
@@ -179,6 +223,7 @@ define(["require", "exports", "@angular/forms"], function (require, exports, for
 					defineClearFormErrors(target);
 					defineSetFormValues(target);
 					defineGetFormValues(target);
+					defineSetFormAsyncValidators(target);
 			};
 	}
 	exports.FormProperty = FormProperty;
