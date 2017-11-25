@@ -1,9 +1,29 @@
 <form [formGroup]="form" (ngSubmit)="form.onSubmit()">
-	<input formControlName="name">
-	<div formGroupName="formGroup">
-		<input formControlName="email">
-		<input formControlName="password">
+	<input formControlName="name" (change)="change()">
+	<app-show-error [control]="form.name"></app-show-error>
+	<br>
+	<input formControlName="email">
+	<app-show-error [control]="form.email"></app-show-error>
+	<br>
+	<input formControlName="password">
+	<app-show-error [control]="form.password"></app-show-error>
+	<br>
+	<div formGroupName="address">
+		<input formControlName="street" (change)="change()">
+		<app-show-error [control]="form.get('address.street')"></app-show-error>
+		<br>
+
+		<input formControlName="city" (change)="change()">
+		<app-show-error [control]="form.get('address.city')"></app-show-error>
+		<br>
+
+		<input formControlName="country" (change)="change()">
+		<app-show-error [control]="form.get('address.country')"></app-show-error>
+		<br>
+
+
+
 	</div>
-	<button type="submit">Done</button>
+	<button type=" submit ">Done</button>
 	{{form.value | json}}
 </form>

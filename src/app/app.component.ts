@@ -36,8 +36,13 @@ export class AppComponent {
 		private form: FormService,
 	) {
 
-		const child = new Member();
 
 	}
+
+	change = () => {
+		console.log(this.form.name.valid);
+		console.log(this.form.name.errors);
+	}
+
 
 }

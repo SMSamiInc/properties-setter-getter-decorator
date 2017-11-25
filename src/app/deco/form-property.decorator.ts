@@ -1,4 +1,8 @@
 import { FormControl, FormGroup, FormBuilder, Validator } from '@angular/forms';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/of';
+import { AbstractControl } from '@angular/forms/src/model';
 
 function push(target, key, mapTo) {
 	target['_list_'].push({ key, mapTo });
@@ -48,10 +52,28 @@ function copyRawObjectValue(src) {
 	return null;
 }
 
+
+function forEachControl(startNode, callbackFormControl, callbackFormGroup = null) {
+	function rec(formGroup) {
+		Object.keys(formGroup.controls)
+			.forEach((key) => {
+				if (formGroup.controls[key] instanceof FormControl) {
+					callbackFormControl(formGroup.controls[key], key, formGroup);
+				} else if (formGroup.controls[key] instanceof FormGroup) {
+					if (callbackFormGroup) {
+						callbackFormGroup(formGroup.controls[key], key, formGroup);
+					}
+					rec(formGroup.controls[key]);
+				}
+			});
+	}
+	rec(startNode);
+}
+
 function defineInitForm(target) {
 	// form initialization
 	Reflect.defineProperty(target, 'initForm', {
-		value: function () {
+		value: function (validatorService: any = null) {
 			const self = this;
 			this['_list_'].forEach((item) => {
 				const control = self[item.key] ? self[item.key] : new FormControl();
@@ -61,22 +83,27 @@ function defineInitForm(target) {
 					this[item.key] = control;
 				}
 			});
+			if (validatorService) {
+				this.setFormAsyncValidators(validatorService);
+			}
 		}
 	});
-
 }
 
-function defineSetFormErrors(target) {
-	Reflect.defineProperty(target, 'setFormErrors', {
-		value: function (json) {
+function defineSetFormAsyncValidators(target) {
+	Reflect.defineProperty(target, 'setFormAsyncValidators', {
+		value: function (validatorService) {
 			const self = this;
-			this['_list_'].forEach((item) => {
-				if (isFormObject(self[item.key])) {
-					self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
-				}
+			forEachControl(self, (control: FormControl, key) => {
+				this['_list_'].forEach((item) => {
+					if (item.key === key && item.mapTo) {
+						control.setAsyncValidators(validatorService(item.mapTo).bind(self));
+					} else if (item.key === key) {
+						control.setAsyncValidators(validatorService(item.key).bind(self));
+					}
+				});
 			});
 
-			return this;
 		}
 	});
 }
@@ -85,11 +112,30 @@ function defineClearFormErrors(target) {
 	Reflect.defineProperty(target, 'clearFormErrors', {
 		value: function () {
 			const self = this;
+			forEachControl(self, (control: FormControl, key) => {
+				control.setErrors(null);
+			});
+		}
+	});
+}
+
+
+function defineSetFormErrors(target) {
+	Reflect.defineProperty(target, 'setFormErrors', {
+		value: function (json) {
+			const self = this;
 			this['_list_'].forEach((item) => {
-				if (isFormObject(self[item.key])) {
-					self[item.key].setErrors(null);
+				if (self[item.key] instanceof FormControl) {
+					self[item.key].setErrors(checkKeys(item.mapTo, item.key, json));
+				}
+				if (self[item.key] instanceof FormGroup) {
+					Object.keys(self[item.key].controls)
+						.forEach((key) => {
+							self[item.key].controls[key].setErrors(checkKeys(item.mapTo, item.key, json[item.key]));
+						});
 				}
 			});
+
 			return this;
 		}
 	});
@@ -155,7 +201,7 @@ function defineGetFormValues(target) {
 
 
 // formProperty decorator
-function FormProperty(mapTo = null) {
+export function FormProperty(mapTo = null) {
 	return function (target, key) {
 		if ('_list_' in target) {
 			push(target, key, mapTo);
@@ -168,18 +214,16 @@ function FormProperty(mapTo = null) {
 		defineClearFormErrors(target);
 		defineSetFormValues(target);
 		defineGetFormValues(target);
+		defineSetFormAsyncValidators(target);
 	};
 }
 
 
 export interface IFormFunctions {
-	initForm: () => any;
+	initForm: (validatorService: any) => any;
 	setFormValues: (any) => any;
 	getFormValues: () => any;
 	setFormErrors: (any) => any;
 	clearFormErrors: () => any;
+	setFormAsyncValidators: (validatorService: any) => any;
 }
-
-export {
-	FormProperty,
-};
